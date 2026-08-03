@@ -1,16 +1,19 @@
-# Stage 1: Build binary using Go
-FROM golang:1.22-alpine AS builder
+# Stage 1: Build the binary 
+FROM golang:1.26.5 AS builder
 WORKDIR /app
 
-# Init modules and build the executable
-COPY main.go .
+# Copy go.mod and go.sum files to download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy SRC files and build the Go binary
+COPY . .
 RUN go mod init math-server && \
     go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server main.go
+    CGO_ENABLED=0 GOOS=linux go build -o server main.go
 
-# Stage 2: Create Alpine image
-FROM alpine:latest
-WORKDIR /root/
+# Stage 2: Final runtime Alpine image
+FROM scratch
 
 # Copy binary from the builder stage
 COPY --from=builder /app/server .
