@@ -21,7 +21,7 @@ Go microservice for a DevOps interview exercise. This service exposes two POST e
 - HTTP method: `POST`
 - Header: `Content-Type: application/json`
 - Body: JSON array
-- Numeric values only; non-numeric strings are ignored
+- Numeric values only; non-numeric strings are ignored and the remaining values are calculated.
 - Payload max size: `1 MiB`
 
 ## HTTP responses
