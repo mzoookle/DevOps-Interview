@@ -21,7 +21,7 @@ Go microservice for a DevOps interview exercise. This service exposes two POST e
 - HTTP method: `POST`
 - Header: `Content-Type: application/json`
 - Body: JSON array
-- Numeric values only; non-numeric strings are ignored and the remaining values are calculated.
+- Numeric values only; non-numeric strings are ignored and the remaining values are calculated
 - Payload max size: `1 MiB`
 
 ## HTTP responses
@@ -50,8 +50,9 @@ curl http://localhost:3000/mean \
   -d '[1.5,3,1,7,4.2]'
 ```
 Response:
-`3.34`
+`3.34`  
 
+  
 
 ```bash
 curl http://localhost:3000/stddev \
