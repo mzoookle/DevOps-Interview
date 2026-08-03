@@ -38,31 +38,35 @@ Go microservice for a DevOps interview exercise. This service exposes two POST e
 curl http://localhost:3000/mean \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '[1,2,3,4,5]'```
+  -d '[1,2,3,4,5]'
+```
 Response:
-```3```
+`3`
 
 ```bash
 curl http://localhost:3000/mean \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '[1.5,3,1,7,4.2]'```
+  -d '[1.5,3,1,7,4.2]'
+```
 Response:
-```3.34```
+`3.34`
 
 
 ```bash
 curl http://localhost:3000/stddev \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '[1,2,3,4,5]'```
+  -d '[1,2,3,4,5]'
+```
 Response:
-```1.414```
+`1.414`
 
 ```bash
 curl http://localhost:3000/stddev \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '[1.5,3,1,7,4.2]'```
+  -d '[1.5,3,1,7,4.2]'
+```
 Response:
-```2.15```
+`2.15`
