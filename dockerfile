@@ -8,9 +8,9 @@ RUN go mod download
 
 # Copy SRC files and build the Go binary
 COPY . .
-RUN go mod init math-server && \
-    go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux go build -o server main.go
+#RUN go mod init math-server && \
+#    go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux go build -o server main.go
 
 # Stage 2: Final runtime Alpine image
 FROM scratch
