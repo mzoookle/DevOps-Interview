@@ -7,10 +7,17 @@ import (
 	"math"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 const maxBodySize = 1 << 20 // 1 MiB
+
+type ResultResponse struct {
+	Result float64 `json:"result"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
 
 // Parse and validate the JSON body
 func parseBody(req *http.Request) ([]float64, error) {
@@ -26,12 +33,6 @@ func parseBody(req *http.Request) ([]float64, error) {
 		return nil, errors.New("Request array must contain at least one Numeric Value")
 	}
 
-	for _, n := range numbers {
-		if math.IsNaN(n) || math.IsInf(n, 0) {
-			return nil, errors.New("Request array must not contain a non-numeric value or infinite values")
-		}
-	}
-
 	return numbers, nil
 }
 
@@ -42,8 +43,8 @@ func roundThree(val float64) float64 {
 
 func calcMean(numbers []float64) float64 {
 	var sum float64
-	for _, n := range numbers {
-		sum += n
+	for _, num := range numbers {
+		sum += num
 	}
 	return sum / float64(len(numbers))
 }
@@ -59,12 +60,14 @@ func calcStddev(numbers []float64, mean float64) float64 {
 // End: Calculations
 
 // Start: Write Helpers
-func writeError(writer http.ResponseWriter, status int, message string) {
-	http.Error(writer, message, status)
+func writeJSON(writer http.ResponseWriter, status int, payload interface{}) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(status)
+	json.NewEncoder(writer).Encode(payload)
 }
 
-func writeFloat(writer http.ResponseWriter, value float64) {
-	writer.Write([]byte(strconv.FormatFloat(value, 'f', -1, 64) + "\n"))
+func writeError(writer http.ResponseWriter, status int, message string) {
+	writeJSON(writer, status, ErrorResponse{Error: message})
 }
 
 // End: Write Helpers
@@ -89,7 +92,7 @@ func meanHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	writeFloat(writer, roundThree(calcMean(numbers)))
+	writeJSON(writer, http.StatusOK, ResultResponse{Result: roundThree(calcMean(numbers))})
 }
 
 func stddevHandler(writer http.ResponseWriter, req *http.Request) {
@@ -111,7 +114,9 @@ func stddevHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	writeFloat(writer, roundThree(calcStddev(numbers, calcMean(numbers))))
+	mean := calcMean(numbers)
+	stddev := calcStddev(numbers, mean)
+	writeJSON(writer, http.StatusOK, ResultResponse{Result: roundThree(stddev)})
 }
 
 // End: Handlers
