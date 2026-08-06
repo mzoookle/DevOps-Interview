@@ -21,6 +21,10 @@ For every incoming request:
 4. Request duration (latency)
 5. Client IP
 
+Logs can be viewed in a running docker container with:
+```bash
+docker logs -f math-service
+```
 
 Example log output:
 ```
