@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Set default values for environment variables if not set
 PORT=3000
-IMAGE_NAME="math-server"
-CONTAINER_NAME="math-server-container"
+IMAGE_NAME="math-service"
+CONTAINER_NAME="math-service-container"
 
 if [ -f .env ]; then
     export $(cat .env | grep -v '#' | xargs)

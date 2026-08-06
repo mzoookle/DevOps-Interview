@@ -1,22 +1,73 @@
-# DevOps-Interview
+# DevOps-Excersize
 
-Go microservice for a DevOps interview exercise. This service exposes two POST endpoints that accept a JSON array of numbers and return a numeric result as plain text.
+Go lightweight HTTP microservice to calculate math functions from a supplied array of numbers. Done for a DevOps exercise.
 
-> NOTE: `build_run.sh` automatically removes any currently running container with the same name and replaces it.
+## Constraints and Features
 
-## Build and Run
-
-- `./build_run.sh`
-- The service listens on `PORT`, defaulting to `3000` when the env var is not set.
-
-## Endpoints
+* Strict JSON validation (no coercion, no partial parsing)
+* Responses rounded to **3 decimal places**
+* Configurable port via environment variable (`PORT`)
+* Dockerized for easy deployment
 
 | Endpoint   | Description |
 | ---------- | ----------- |
-| `/mean`    | Calculates the mean of all numeric values in the request body |
-| `/stddev`  | Calculates the population standard deviation of all numeric values in the request body |
+| `/mean`    | Calculates the mean of all numeric values in the JSON array |
+| `/stddev`  | Calculates the population standard deviation of all numeric values in the JSON array |
 
-## Request requirements
+## Build and Run Options
+
+### 1. Use Provided Script
+
+If using the included script:
+
+```bash
+chmod +x build_run.sh
+./build_run.sh
+```
+
+Customizations to build params can be done in your `.env`:
+
+```env
+IMAGE_NAME=math-service
+CONTAINER_NAME=math-service-container
+PORT=3000
+```
+> NOTE: `build_run.sh` automatically removes any currently running container with the same name and replaces it.
+
+---
+
+### 2. Run with Docker
+
+#### Build the image
+
+```bash
+docker build -t math-service .
+```
+
+#### Run the container
+
+```bash
+docker run -p 3000:3000 -e PORT=3000 math-service
+```
+
+---
+
+### 3. Run Locally
+
+Default port: `3000`
+
+```bash
+go run main.go
+```
+
+Override port:
+
+```bash
+PORT=8080 go run main.go
+```
+
+
+## Request Requirements
 
 - HTTP method: `POST`
 - Header: `Content-Type: application/json`
@@ -24,7 +75,15 @@ Go microservice for a DevOps interview exercise. This service exposes two POST e
 - Numeric values only; non-numeric strings are ignored and the remaining values are calculated
 - Payload max size: `1 MiB`
 
-## HTTP responses
+## HTTP Details
+
+All requests must include:
+
+```http
+Content-Type: application/json
+```
+
+---
 
 | HTTP Status | Description |
 | ----------- | ----------- |
@@ -33,41 +92,130 @@ Go microservice for a DevOps interview exercise. This service exposes two POST e
 | `405 Method Not Allowed` | Request method is not `POST` |
 | `413 Payload Too Large` | Request body exceeds 1 MiB |
 
-## Examples
+## Usage
+
+### Request
+
 ```bash
-curl http://localhost:3000/mean \
-  -X POST \
+curl -X POST http://localhost:3000/mean \
   -H "Content-Type: application/json" \
   -d '[1,2,3,4,5]'
 ```
-Response:
-`3`
 
-```bash
-curl http://localhost:3000/mean \
-  -X POST \
-  -H "Content-Type: application/json" \
-  -d '[1.5,3,1,7,4.2]'
+### Response
+
+#### HTTP Status
+`200 OK`
+
+```json
+{
+  "result": 3
+}
 ```
-Response:
-`3.34`  
 
-  
+---
+
+### Request
 
 ```bash
-curl http://localhost:3000/stddev \
-  -X POST \
+curl -X POST http://localhost:3000/stddev \
   -H "Content-Type: application/json" \
   -d '[1,2,3,4,5]'
 ```
-Response:
-`1.414`
+
+### Response
+
+#### HTTP Status
+`200 OK`
+
+```json
+{
+  "result": 1.414
+}
+```
+
+---
+
+### Decimal Input
 
 ```bash
-curl http://localhost:3000/stddev \
-  -X POST \
+curl -X POST http://localhost:3000/mean \
   -H "Content-Type: application/json" \
   -d '[1.5,3,1,7,4.2]'
 ```
-Response:
-`2.15`
+
+### Response
+
+#### HTTP Status
+`200 OK`
+
+```json
+{
+  "result": 3.34
+}
+```
+
+---
+
+## Error Handling
+
+### Invalid JSON
+
+```bash
+curl -X POST http://localhost:3000/mean \
+  -H "Content-Type: application/json" \
+  -d '{"numbers":[1,2,3]}'
+```
+
+### Response
+
+#### HTTP Status
+`400 Bad Request`
+
+```json
+{
+  "error": "Request body must be a JSON array of numbers"
+}
+```
+
+---
+
+### Non-Numeric Values
+
+```bash
+curl -X POST http://localhost:3000/mean \
+  -H "Content-Type: application/json" \
+  -d '[1,"abc",3]'
+```
+
+### Response
+
+#### HTTP Status
+`400 Bad Request`
+
+```json
+{
+  "error": "Request body must be a JSON array of numbers"
+}
+```
+
+---
+
+### Empty Array
+
+```bash
+curl -X POST http://localhost:3000/mean \
+  -H "Content-Type: application/json" \
+  -d '[]'
+```
+
+### Response
+
+#### HTTP Status
+`400 Bad Request`
+
+```json
+{
+  "error": "Request array must contain at least one Numeric Value"
+}
+```
