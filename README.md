@@ -259,5 +259,5 @@ This repository includes unit tests in `main_test.go`.
 Run the tests with:
 
 ```bash
-go test
+go test -v
 ```
