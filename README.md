@@ -1,6 +1,6 @@
 # DevOps-Excersize
 
-Go lightweight HTTP microservice to calculate math functions from a supplied array of numbers. Done for a DevOps exercise.
+Go lightweight HTTP microservice to calculate math functions from a supplied array of numbers. Unit tests are provided in `main_test.go`. Done for a DevOps exercise.
 
 ## Constraints and Features
 
@@ -9,30 +9,81 @@ Go lightweight HTTP microservice to calculate math functions from a supplied arr
 * Configurable port via environment variable (`PORT`)
 * Dockerized for easy deployment
 
-| Endpoint   | Description |
-| ---------- | ----------- |
-| `/mean`    | Calculates the mean of all numeric values in the JSON array |
-| `/stddev`  | Calculates the population standard deviation of all numeric values in the JSON array |
+### Logging & Observability
+
+This service includes request/response middleware logging to improve visibility into application behavior.
+
+For every incoming request:
+
+1. HTTP method (GET, POST, etc.)
+2. Request path
+3. Response status code
+4. Request duration (latency)
+5. Client IP
+
+
+Example log output:
+```
+time=2026-08-06T06:24:00.313Z level=INFO msg="Completed HTTP Request" method=POST path=/mean status=200 duration=100.939µs ip=172.17.0.1:42010
+```
+
+### Endpoints
+
+| Endpoint   | HTTP Method | Description |
+| ---------- | ----------- | ----------- |
+| `/health`  | `GET`       | Check the status of the server |
+| `/mean`    | `POST`      | Calculates the mean of all numeric values in the JSON array |
+| `/stddev`  | `POST`      | Calculates the population standard deviation of all numeric values in the JSON array |
+
+### Request Requirements
+
+*Math Function Endpoints:*
+- HTTP method: `POST`
+- Header: `Content-Type: application/json`
+- Body: JSON array
+- Numeric values only; non-numeric strings are ignored and the remaining values are calculated
+- Payload max size: `1 MiB`
+
+### HTTP Details
+
+All requests must include:
+
+```http
+Content-Type: application/json
+```
+
+---
+
+| HTTP Status | Description |
+| ----------- | ----------- |
+| `200 OK` | Valid JSON request accepted; numeric result returned as plain text |
+| `400 Bad Request` | Invalid JSON or no valid numeric values provided |
+| `405 Method Not Allowed` | Request method is not `POST` |
+| `413 Payload Too Large` | Request body exceeds 1 MiB |
 
 ## Build and Run Options
 
 ### 1. Use Provided Script
 
-If using the included script:
+Customizations to build params can be done in your `.env`:
 
+```env
+NAME=math-service
+PORT=3000
+LOG_LEVEL=DEBUG
+```
+
+>Environmental file (`.env`) should be modeled by the `.env.example`. 
+
+>Program defaults to `INFO` if `LOG_LEVEL` is not defined. `NAME` and `PORT` are required.
+
+After creating your .env file in the same directory, you can run:
 ```bash
 chmod +x build_run.sh
 ./build_run.sh
 ```
 
-Customizations to build params can be done in your `.env`:
-
-```env
-IMAGE_NAME=math-service
-CONTAINER_NAME=math-service-container
-PORT=3000
-```
-> NOTE: `build_run.sh` automatically removes any currently running container with the same name and replaces it.
+>NOTE: `build_run.sh` automatically removes any currently running container with the same name and replaces it.
 
 ---
 
@@ -65,32 +116,7 @@ Override port:
 ```bash
 PORT=8080 go run main.go
 ```
-
-
-## Request Requirements
-
-- HTTP method: `POST`
-- Header: `Content-Type: application/json`
-- Body: JSON array
-- Numeric values only; non-numeric strings are ignored and the remaining values are calculated
-- Payload max size: `1 MiB`
-
-## HTTP Details
-
-All requests must include:
-
-```http
-Content-Type: application/json
-```
-
 ---
-
-| HTTP Status | Description |
-| ----------- | ----------- |
-| `200 OK` | Valid JSON request accepted; numeric result returned as plain text |
-| `400 Bad Request` | Invalid JSON or no valid numeric values provided |
-| `405 Method Not Allowed` | Request method is not `POST` |
-| `413 Payload Too Large` | Request body exceeds 1 MiB |
 
 ## Usage
 
@@ -218,4 +244,16 @@ curl -X POST http://localhost:3000/mean \
 {
   "error": "Request array must contain at least one Numeric Value"
 }
+```
+
+---
+
+## Testing
+
+This repository includes unit tests in `main_test.go`.
+
+Run the tests with:
+
+```bash
+go test
 ```
