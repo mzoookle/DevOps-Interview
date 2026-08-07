@@ -1,5 +1,5 @@
 # Stage 1: Build the binary 
-FROM golang:1.26.5 AS builder
+FROM golang:1.23 AS builder
 WORKDIR /app
 
 # Copy go.mod and go.sum files to download dependencies
