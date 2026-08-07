@@ -1,4 +1,4 @@
-# DevOps-Excersize
+# math-service - DevOps Excersize
 
 Lightweight HTTP microservice written in Go to calculate math functions from a supplied array of numbers. Unit tests are provided in `main_test.go`. Done for a DevOps exercise.
 
